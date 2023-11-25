@@ -7,6 +7,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { ReactComponent as ArrowRightIcon } from '../assets/svg/keyboardArrowRightIcon.svg';
 
 import visibilityIcon from '../assets/svg/visibilityIcon.svg';
+import { app } from '../firebase.config';
 
 //
 function SignIn() {
@@ -29,7 +30,7 @@ function SignIn() {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            const auth = getAuth();
+            const auth = getAuth(app);
 
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             if (userCredential.user) {
