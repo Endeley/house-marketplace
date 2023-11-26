@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { collection, getDocs, query, where, orderBy, startAfter, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, startAfter, limit, doc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { toast } from 'react-toastify';
+import ListingItem from '../component/ListingItem';
 import Spinner from '../component/Spinner';
 
 //
@@ -24,22 +25,48 @@ const Categories = () => {
                 // / execute query
 
                 const querySnap = await getDocs(q);
-                if (querySnap.empty) {
-                    console.log('No documents found.');
-                } else {
-                    querySnap.forEach((doc) => {
-                        console.log(doc.data());
+                const listings = [];
+
+                querySnap.forEach((doc) => {
+                    return listings.push({
+                        id: doc.id,
+                        data: doc.data(),
                     });
-                } //
+                });
+                //
+                console.log(listings);
+                setListings(listings);
+                setLoading(false);
             } catch (error) {
-                console.log(error);
+                toast.error('Could not fetch listings');
             }
         };
         fetchListings();
     }, [params.categoryName]);
 
     //
-    return <div>Categories</div>;
+    return (
+        <div className='category'>
+            <header>
+                <p className='pageHeader'>{params.categoryName === 'rent' ? 'Place For Rent' : 'Place For Sale'}</p>
+            </header>
+            {loading ? (
+                <Spinner />
+            ) : listings && listings.length > 0 ? (
+                <>
+                    <main>
+                        <ul className='categoryListings'>
+                            {listings.map((listing) => (
+                                <ListingItem listing={listing.data} id={listing.id} key={listing.id} />
+                            ))}
+                        </ul>
+                    </main>
+                </>
+            ) : (
+                <p>No Listings for {params.categoryName} Yet</p>
+            )}
+        </div>
+    );
 };
 
 export default Categories;
