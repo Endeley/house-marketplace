@@ -1,3 +1,4 @@
+// this project will be Upscaled needs to be upscaled
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';

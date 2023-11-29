@@ -1,3 +1,4 @@
+// this project will be Upscaled needs to be upscaled
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStatus } from '../hooks/useAuthStatus';
 import Spinner from './Spinner';
