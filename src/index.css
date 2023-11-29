@@ -9,7 +9,7 @@ html::-webkit-scrollbar {
 
 body {
     font-family: 'Montserrat', sans-serif;
-    background-color: #f2f4f8;
+    background-color: #edf0f3;
     margin: 0;
     box-sizing: border-box;
 }
@@ -32,7 +32,7 @@ button {
 .textarea {
     box-shadow: rgba(0, 0, 0, 0.11);
     border: none;
-    background: #ffffff;
+    background: rgb(244, 244, 244);
     border-radius: 3rem;
     height: 3rem;
     width: 100%;
@@ -122,7 +122,7 @@ button {
     width: 64px;
     height: 64px;
     border: 8px solid;
-    border-color: #00cc66 transparent #00cc66 transparent;
+    border-color: #aa00cc transparent #00cc7a transparent;
     border-radius: 50%;
     animation: spin 1.2s linear infinite;
 }

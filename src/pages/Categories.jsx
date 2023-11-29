@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { collection, getDocs, query, where, orderBy, startAfter, limit, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { toast } from 'react-toastify';
 import ListingItem from '../component/ListingItem';
@@ -10,6 +10,7 @@ import Spinner from '../component/Spinner';
 const Categories = () => {
     const [listings, setListings] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [lastFetchedListing, setLastFetchedListing] = useState(null);
     const params = useParams();
 
     //
@@ -25,6 +26,12 @@ const Categories = () => {
                 // / execute query
 
                 const querySnap = await getDocs(q);
+                //
+
+                const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+                setLastFetchedListing(lastVisible);
+
+                //
                 const listings = [];
 
                 querySnap.forEach((doc) => {
@@ -34,7 +41,7 @@ const Categories = () => {
                     });
                 });
                 //
-                console.log(listings);
+
                 setListings(listings);
                 setLoading(false);
             } catch (error) {
@@ -43,6 +50,41 @@ const Categories = () => {
         };
         fetchListings();
     }, [params.categoryName]);
+
+    //
+    // pagination / loadmore
+    const fetchMoreListings = async () => {
+        try {
+            //  get refernce
+            const listingsRef = collection(db, 'listings');
+
+            // create query
+            const q = query(listingsRef, where('type', '==', params.categoryName), orderBy('timestamp', 'desc'), startAfter(lastFetchedListing), limit(10));
+            // / execute query
+
+            const querySnap = await getDocs(q);
+            //
+
+            const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+            setLastFetchedListing(lastVisible);
+
+            //
+            const listings = [];
+
+            querySnap.forEach((doc) => {
+                return listings.push({
+                    id: doc.id,
+                    data: doc.data(),
+                });
+            });
+            //
+
+            setListings((prevState) => [...prevState, ...listings]);
+            setLoading(false);
+        } catch (error) {
+            toast.error('Could not fetch listings');
+        }
+    };
 
     //
     return (
@@ -61,6 +103,13 @@ const Categories = () => {
                             ))}
                         </ul>
                     </main>
+                    <br />
+                    <br />
+                    {lastFetchedListing && (
+                        <p className='loadMore' onClick={fetchMoreListings}>
+                            Load More
+                        </p>
+                    )}
                 </>
             ) : (
                 <p>No Listings for {params.categoryName} Yet</p>
