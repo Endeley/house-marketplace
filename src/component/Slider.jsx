@@ -47,6 +47,10 @@ const Slider = () => {
         return <Spinner />;
     }
 
+    if (listings.length === 0) {
+        return <></>;
+    }
+
     return (
         listings && (
             <>
@@ -54,7 +58,7 @@ const Slider = () => {
                 <Swiper slidesPerView={1} pagination={{ clickable: true }}>
                     {listings.map(({ data, id }) => (
                         <SwiperSlide key={id} onClick={() => navigate(`/categories/${data.type}/${id}`)}>
-                            <div style={{ width: '100%', height: '800px', background: `url(${data.imgUrls[0]}) center no-repeat`, backgroundSize: 'cover' }} className='swiperSlideDiv'>
+                            <div style={{ width: '100%', height: '500px', background: `url(${data.imgUrls[0]}) center no-repeat`, backgroundSize: 'cover' }} className='swiperSlideDiv'>
                                 <p className='swiperSlideText'>{data.name}</p>
                                 <p className='swiperSlidePrice'>
                                     {' '}

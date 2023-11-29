@@ -14,6 +14,10 @@ import Contact from './pages/Contact';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import CreateListing from './pages/CreateListing';
+import EditListing from './pages/EditListing';
+
+//
+//
 function App() {
     return (
         <>
@@ -24,6 +28,7 @@ function App() {
                     <Route path='/offers' element={<Offers />} />
                     <Route path='/categories/:categoryName' element={<Categories />} />
                     <Route path='/categories/:categoryName/:listingId' element={<Listing />} />
+                    <Route path='/edit-listing/:listingId' element={<EditListing />} />
                     <Route element={<PrivateRoute />}>
                         <Route path='/profile' element={<Profile />} />
                     </Route>

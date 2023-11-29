@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase.config';
-import { useNavigate } from 'react-router-dom';
+import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db, app } from '../firebase.config';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
 import Spinner from '../component/Spinner';
 
-function CreateListing() {
+function EditListing() {
     // eslint-disable-next-line
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [listing, setListing] = useState(false);
     const [formData, setFormData] = useState({
         type: 'rent',
         name: '',
@@ -30,10 +31,37 @@ function CreateListing() {
 
     const { type, name, bedrooms, bathrooms, parking, furnished, address, offer, regularPrice, discountedPrice, images, latitude, longitude } = formData;
 
-    const auth = getAuth();
+    const auth = getAuth(app);
     const navigate = useNavigate();
+    const params = useParams();
     const isMounted = useRef(true);
+    //
 
+    useEffect(() => {
+        if (listing && listing.userRef !== auth.currentUser.uid) {
+            toast.error('You are not allowed to edit this Listing');
+            navigate('/');
+        }
+    });
+
+    //  Fetch listing to edit
+    useEffect(() => {
+        setLoading(true);
+        const fetchListing = async () => {
+            const docRef = doc(db, 'listings', params.listingId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setListing(docSnap.data());
+                setFormData({ ...docSnap.data(), address: docSnap.data().location });
+                setLoading(false);
+            } else {
+                navigate('/');
+                toast.error('Listing does not exist');
+            }
+        };
+        fetchListing();
+    }, [params.listingId, navigate]);
+    //  set userRef to logged in user
     useEffect(() => {
         if (isMounted) {
             onAuthStateChanged(auth, (user) => {
@@ -64,7 +92,7 @@ function CreateListing() {
 
         if (images.length > 6) {
             setLoading(false);
-            toast.error('Max 6 images');
+            toast.error('Maximum should be 6 images');
             return;
         }
 
@@ -75,6 +103,7 @@ function CreateListing() {
             const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`);
 
             const data = await response.json();
+            console.log(data);
 
             geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
             geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
@@ -131,17 +160,11 @@ function CreateListing() {
             });
         };
 
-        const imgUrls = await Promise.all(Array.from(images).map((image) => storeImage(image))).catch(() => {
+        const imgUrls = await Promise.all([...images].map((image) => storeImage(image))).catch(() => {
             setLoading(false);
             toast.error('Images not uploaded');
             return;
         });
-
-        // const imgUrls = await Promise.all([...images].map((image) => storeImage(image))).catch(() => {
-        //     setLoading(false);
-        //     toast.error('Images not uploaded');
-        //     return;
-        // });
 
         const formDataCopy = {
             ...formData,
@@ -155,7 +178,9 @@ function CreateListing() {
         delete formDataCopy.address;
         !formDataCopy.offer && delete formDataCopy.discountedPrice;
 
-        const docRef = await addDoc(collection(db, 'listings'), formDataCopy);
+        // update listings
+        const docRef = doc(db, 'listings', params.listingId);
+        await updateDoc(docRef, formDataCopy);
         setLoading(false);
         toast.success('Listing saved');
         navigate(`/categories/${formDataCopy.type}/${docRef.id}`);
@@ -195,7 +220,7 @@ function CreateListing() {
     return (
         <div className='profile'>
             <header>
-                <p className='pageHeader'>Create a Listing</p>
+                <p className='pageHeader'>Edit a Listing</p>
             </header>
 
             <main>
@@ -287,7 +312,7 @@ function CreateListing() {
                     <p className='imagesInfo'>The first image will be the cover (max 6).</p>
                     <input className='formInputFile' type='file' id='images' onChange={onMutate} max='6' accept='.jpg,.png,.jpeg' multiple required />
                     <button type='submit' className='primaryButton createListingButton'>
-                        Create Listing
+                        Edite Listing
                     </button>
                 </form>
             </main>
@@ -295,4 +320,4 @@ function CreateListing() {
     );
 }
 
-export default CreateListing;
+export default EditListing;

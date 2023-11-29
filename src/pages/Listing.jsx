@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-// import { Helmet } from 'react-helmet';
+
 import { getDoc, doc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db, app } from '../firebase.config';
@@ -58,7 +58,7 @@ const Listing = () => {
                         <div
                             style={{
                                 width: '100%',
-                                height: '800px',
+                                height: '500px',
 
                                 background: `url(${listing.imgUrls[index]}) center no-repeat`,
                                 backgroundSize: 'cover',
